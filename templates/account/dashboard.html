@@ -27,7 +27,7 @@
                             <small class="text-muted">Playlists</small>
                         </div>
                         <div class="col-6 mb-3">
-                            <h5>{{ user.likedsong_set.count }}</h5>
+                            <h5>{{ user.liked_songs.count }}</h5>
                             <small class="text-muted">Liked Songs</small>
                         </div>
                         {% if user.is_artist %}
@@ -51,13 +51,13 @@
                 <div class="card-body">
                     <h4 class="card-title">Recent Activity</h4>
                     <div class="list-group list-group-flush bg-dark">
-                        {% for history in user.listeninghistory_set.all|slice:":5" %}
+                        {% for history in user.playcount_set.all|slice:":5" %}
                         <div class="list-group-item bg-dark border-light">
                             <div class="d-flex w-100 justify-content-between">
                                 <h6 class="mb-1">{{ history.song.title }}</h6>
                                 <small class="text-muted">{{ history.played_at|timesince }} ago</small>
                             </div>
-                            <small class="text-muted">{{ history.song.artist }}</small>
+                            <small class="text-muted">{{ history.song.artist.get_display_name }}</small>
                         </div>
                         {% empty %}
                         <p class="text-muted">No recent activity</p>
@@ -77,7 +77,7 @@
                         <div class="col-md-6">
                             <h5>Your Songs</h5>
                             <div class="list-group list-group-flush bg-dark">
-                                {% for song in user.song_set.all|slice:":5" %}
+                                {% for song in user.songs.all|slice:":5" %}
                                 <div class="list-group-item bg-dark border-light">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1">{{ song.title }}</h6>
@@ -93,7 +93,7 @@
                         <div class="col-md-6">
                             <h5>Your Albums</h5>
                             <div class="list-group list-group-flush bg-dark">
-                                {% for album in user.album_set.all|slice:":5" %}
+                                {% for album in user.albums.all|slice:":5" %}
                                 <div class="list-group-item bg-dark border-light">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1">{{ album.title }}</h6>
@@ -113,4 +113,4 @@
         {% endif %}
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

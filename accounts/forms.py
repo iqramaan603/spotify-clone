@@ -15,9 +15,7 @@ class CustomUserCreationForm(UserCreationForm):
         user = super().save(commit=False)
         user.username = user.email  # Using email as username
         if commit:
-            user.save()
-            # Create user preferences
-            UserPreferences.objects.create(user=user)
+            user.save()  # preferences are created automatically by the signal
         return user
 
 class CustomUserChangeForm(UserChangeForm):

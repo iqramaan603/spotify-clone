@@ -25,7 +25,7 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, 'Registration successful!')
             return redirect('accounts:dashboard')
     else:
@@ -174,8 +174,8 @@ def login_view(request):
         password = request.POST.get('password')
         user = authenticate(request, email=email, password=password)
         if user is not None:
-            login(request, user)
-            messages.success(request, 'Welcome back!')
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            messages.success(request, 'Registration successful!')
             return redirect('accounts:dashboard')
         else:
             messages.error(request, 'Invalid email or password.')
