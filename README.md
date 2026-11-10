@@ -1,91 +1,82 @@
-# Spotify Clone
+# Spotify Clone (Django)
 
-A full-stack Spotify-style web application built with Django.
+A music streaming web app inspired by Spotify, built with Django. Users can sign up, upload songs and albums, browse music, and build their own playlists.
 
 ## Features
 
-- Custom User Authentication (Email-based)
-- Profile Management
-- Music Browsing & Search
-- Playlist Management
-- Music Upload (for Artists)
-- Music Streaming & Playback
-- Subscription Management
-- Notifications & Alerts
-- Admin Dashboard
-- Analytics & Insights
+- Sign up and log in with email (django-allauth), with email verification and password reset
+- User and artist dashboards, plus profile pages
+- Upload songs and create albums with cover images
+- Browse albums and songs by genre
+- Create, edit and delete playlists, and add songs to them
+- Built-in music player with audio playback
+- REST API with filtering, search and pagination (Django REST Framework)
+- Secrets kept out of the code using a `.env` file
 
-## Setup Instructions
+## Tech stack
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/spotify-clone.git
-cd spotify-clone
-```
+- Python and Django 5.2
+- Django REST Framework, django-filter, django-cors-headers
+- django-allauth, django-crispy-forms (Bootstrap 5)
+- SQLite database
+- HTML, CSS and JavaScript
 
-2. Create and activate virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+## Screenshots
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+<!-- Add screenshots here later, for example: -->
+<!-- ![Home page](screenshots/home.png) -->
 
-4. Create a .env file in the project root and add the following:
-```
-SECRET_KEY=your_secret_key
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your_email@gmail.com
-EMAIL_HOST_PASSWORD=your_app_password
-CORS_ALLOWED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
-```
+## How to run it on your computer
 
-For production deployment, make sure to:
-- Set DEBUG=False
-- Use a strong SECRET_KEY
-- Configure proper ALLOWED_HOSTS
-- Set up proper email settings
-- Configure SSL/TLS certificates
-- Set up proper CORS settings
+1. Install Python 3.12 or newer.
 
-5. Run migrations:
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
+2. Download the project and open a terminal in its folder (the one with `manage.py`).
 
-6. Create a superuser:
-```bash
-python manage.py createsuperuser
-```
+3. Install the libraries:
 
-7. Run the development server:
-```bash
-python manage.py runserver
-```
+   ```
+   pip install -r requirements.txt
+   ```
 
-8. Visit http://127.0.0.1:8000 in your browser
+4. Create a file named `.env` next to `manage.py` and add:
 
-## Project Structure
+   ```
+   SECRET_KEY=put-any-long-random-text-here
+   DEBUG=True
+   ```
 
-- `accounts/` - Custom user authentication and profile management
-- `music/` - Music-related models and views (Artists, Albums, Songs)
-- `playlists/` - Playlist management functionality
+   `DEBUG=True` is needed to run the app locally over http.
 
-## Contributing
+5. Set up the database:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+   ```
+   python manage.py migrate
+   python manage.py create_default_genres
+   ```
 
-## License
+6. Start the server:
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+   ```
+   python manage.py runserver
+   ```
+
+7. Open http://127.0.0.1:8000 in your browser.
+
+**Note:** Email verification emails are printed in the terminal (not sent), so copy the verification link from there after signing up.
+
+## About the songs
+
+Songs are not included in this repository. Upload your own audio files through the app (Upload song page) after you create an account. Please only use music you have the right to use.
+
+## Project structure
+
+- `accounts/` users, login, profiles and dashboards
+- `music/` songs, albums and genres
+- `playlists/` playlists and the songs in them
+- `templates/` HTML pages
+- `static/js/` music player script
+- `spotify_clone/` project settings
+
+## Author
+
+Iqra Maan, [GitHub](https://github.com/iqramaan603)
