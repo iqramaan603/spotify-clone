@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete {{ playlist.title }} - Spotify Clone{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card bg-dark border-light">
+        <div class="card-header">
+            <h2 class="card-title mb-0">Delete Playlist</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>Are you sure you want to delete the playlist "{{ playlist.title }}"?</p>
+                <hr>
+                <p class="mb-0">This action cannot be undone. All songs in this playlist will be removed.</p>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body bg-dark">
+                    <div class="row">
+                        <div class="col-md-3">
+                            {% if playlist.cover_image %}
+                                <img src="{{ playlist.cover_image.url }}" alt="{{ playlist.title }}" class="img-fluid rounded">
+                            {% else %}
+                                <div class="bg-secondary rounded" style="height: 200px;">
+                                    <i class="fas fa-music fa-3x text-light d-flex justify-content-center align-items-center h-100"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h3>{{ playlist.title }}</h3>
+                            <p class="text-muted">Created by {{ playlist.user.get_display_name }}</p>
+                            {% if playlist.description %}
+                                <p>{{ playlist.description }}</p>
+                            {% endif %}
+                            <p>
+                                <span class="badge bg-secondary me-2">{{ playlist.songs.count }} songs</span>
+                                {% if playlist.is_public %}
+                                    <span class="badge bg-success">Public</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Private</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt me-2"></i>Delete Playlist
+                </button>
+                <a href="{% url 'playlists:playlist_detail' playlist.pk %}" class="btn btn-outline-light">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

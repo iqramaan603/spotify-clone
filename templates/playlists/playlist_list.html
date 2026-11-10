@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Playlists - Spotify Clone{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Playlists</h1>
+        <a href="{% url 'playlists:create_playlist' %}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i>Create Playlist
+        </a>
+    </div>
+
+    <!-- User's Playlists -->
+    <h3 class="mb-3">Your Playlists</h3>
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+        {% for playlist in user_playlists %}
+            <div class="col">
+                <div class="card bg-dark h-100">
+                    {% if playlist.cover_image %}
+                        <img src="{{ playlist.cover_image.url }}" class="card-img-top" alt="{{ playlist.title }}">
+                    {% else %}
+                        <div class="bg-secondary" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-music fa-3x text-light"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ playlist.title }}</h5>
+                        <p class="card-text text-muted">{{ playlist.song_count }} songs</p>
+                        <a href="{% url 'playlists:playlist_detail' playlist.pk %}" class="btn btn-outline-light btn-sm">
+                            View Playlist
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-muted">You haven't created any playlists yet.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Followed Playlists -->
+    <h3 class="mb-3">Followed Playlists</h3>
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+        {% for playlist in followed_playlists %}
+            <div class="col">
+                <div class="card bg-dark h-100">
+                    {% if playlist.cover_image %}
+                        <img src="{{ playlist.cover_image.url }}" class="card-img-top" alt="{{ playlist.title }}">
+                    {% else %}
+                        <div class="bg-secondary" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-music fa-3x text-light"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ playlist.title }}</h5>
+                        <p class="card-text text-muted">By {{ playlist.user.get_display_name }}</p>
+                        <a href="{% url 'playlists:playlist_detail' playlist.pk %}" class="btn btn-outline-light btn-sm">
+                            View Playlist
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-muted">You're not following any playlists yet.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Public Playlists -->
+    <h3 class="mb-3">Discover Playlists</h3>
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for playlist in public_playlists %}
+            <div class="col">
+                <div class="card bg-dark h-100">
+                    {% if playlist.cover_image %}
+                        <img src="{{ playlist.cover_image.url }}" class="card-img-top" alt="{{ playlist.title }}">
+                    {% else %}
+                        <div class="bg-secondary" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-music fa-3x text-light"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ playlist.title }}</h5>
+                        <p class="card-text text-muted">By {{ playlist.user.get_display_name }}</p>
+                        <a href="{% url 'playlists:playlist_detail' playlist.pk %}" class="btn btn-outline-light btn-sm">
+                            View Playlist
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p class="text-muted">No public playlists available.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

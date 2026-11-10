@@ -1,0 +1,27 @@
+Welcome to Spotify Clone!
+
+Hello {{ user.get_display_name }},
+
+Thank you for joining Spotify Clone! We're excited to have you as part of our music community.
+
+Get Started with These Features:
+- Create and manage your playlists
+- Discover new music
+- Follow your favorite artists
+- Share music with friends
+
+Visit your dashboard here: {% url 'dashboard' %}
+
+{% if user.is_artist %}
+For Artists:
+- Upload your music
+- Track your plays and likes
+- Engage with your fans
+- View detailed analytics
+{% endif %}
+
+If you have any questions or need assistance, don't hesitate to contact our support team.
+
+This email was sent to {{ user.email }}.
+
+© {% now "Y" %} Spotify Clone. All rights reserved. 

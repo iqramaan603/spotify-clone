@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Spotify Clone</title>
+</head>
+<body>
+    <h1>Welcome to Spotify Clone!</h1>
+    <p>Hi {{ user.get_display_name }},</p>
+    <p>Thank you for joining Spotify Clone. We're excited to have you on board!</p>
+    <p>You can now:</p>
+    <ul>
+        <li>Browse and listen to music</li>
+        <li>Create playlists</li>
+        <li>Follow your favorite artists</li>
+        <li>Discover new music</li>
+    </ul>
+    <p>Get started by visiting your dashboard:</p>
+    <p><a href="{{ site_url }}{% url 'accounts:dashboard' %}">Visit Dashboard</a></p>
+    <p>Enjoy the music!</p>
+    <p>Best regards,<br>The Spotify Clone Team</p>
+</body>
+</html> 

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Dashboard - Spotify Clone{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Welcome Section -->
+        <div class="col-12 mb-4">
+            <div class="card bg-dark border-light">
+                <div class="card-body">
+                    <h2>Welcome, {{ user.get_display_name }}!</h2>
+                    <p class="lead">Here's what's happening in your music world</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="col-md-4 mb-4">
+            <div class="card bg-dark border-light h-100">
+                <div class="card-body">
+                    <h4 class="card-title">Your Stats</h4>
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h5>{{ user.playlists.count }}</h5>
+                            <small class="text-muted">Playlists</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h5>{{ user.likedsong_set.count }}</h5>
+                            <small class="text-muted">Liked Songs</small>
+                        </div>
+                        {% if user.is_artist %}
+                        <div class="col-6">
+                            <h5>{{ total_plays|default:"0" }}</h5>
+                            <small class="text-muted">Total Plays</small>
+                        </div>
+                        <div class="col-6">
+                            <h5>{{ total_likes|default:"0" }}</h5>
+                            <small class="text-muted">Total Likes</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-md-8 mb-4">
+            <div class="card bg-dark border-light h-100">
+                <div class="card-body">
+                    <h4 class="card-title">Recent Activity</h4>
+                    <div class="list-group list-group-flush bg-dark">
+                        {% for history in user.listeninghistory_set.all|slice:":5" %}
+                        <div class="list-group-item bg-dark border-light">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ history.song.title }}</h6>
+                                <small class="text-muted">{{ history.played_at|timesince }} ago</small>
+                            </div>
+                            <small class="text-muted">{{ history.song.artist }}</small>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">No recent activity</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_artist %}
+        <!-- Artist Section -->
+        <div class="col-12">
+            <div class="card bg-dark border-light">
+                <div class="card-body">
+                    <h4 class="card-title">Artist Dashboard</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Your Songs</h5>
+                            <div class="list-group list-group-flush bg-dark">
+                                {% for song in user.song_set.all|slice:":5" %}
+                                <div class="list-group-item bg-dark border-light">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ song.title }}</h6>
+                                        <small class="text-muted">{{ song.play_count }} plays</small>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted">No songs uploaded yet</p>
+                                {% endfor %}
+                            </div>
+                            <a href="{% url 'music:upload_song' %}" class="btn btn-success mt-3">Upload New Song</a>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Your Albums</h5>
+                            <div class="list-group list-group-flush bg-dark">
+                                {% for album in user.album_set.all|slice:":5" %}
+                                <div class="list-group-item bg-dark border-light">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ album.title }}</h6>
+                                        <small class="text-muted">{{ album.songs.count }} songs</small>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <p class="text-muted">No albums created yet</p>
+                                {% endfor %}
+                            </div>
+                            <a href="{% url 'music:create_album' %}" class="btn btn-success mt-3">Create New Album</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

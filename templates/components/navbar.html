@@ -1,0 +1,151 @@
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-black">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="fab fa-spotify me-2"></i>Spotify Clone
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'music:song_list' %}">Songs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'music:album_list' %}">Albums</a>
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'playlists:playlist_list' %}">Playlists</a>
+                    </li>
+                {% endif %}
+            </ul>
+            
+            <!-- Search Bar -->
+            <div class="d-flex mx-auto position-relative">
+                <input type="text" 
+                       id="search-input" 
+                       class="form-control bg-dark text-light border-dark" 
+                       placeholder="Search songs..."
+                       style="width: 300px;">
+                <div id="search-results" 
+                     class="position-absolute bg-dark w-100 mt-1 rounded shadow-lg" 
+                     style="display: none; top: 100%; z-index: 1000;">
+                </div>
+            </div>
+
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    {% if user.is_artist %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'music:upload_song' %}">Upload Song</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:logout' %}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Search Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`/music/search/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.songs.length > 0) {
+                        searchResults.innerHTML = data.songs.map(song => `
+                            <div class="p-2 search-result-item" style="cursor: pointer;" 
+                                 onclick="window.location.href='/music/songs/${song.id}/'">
+                                <div class="d-flex align-items-center">
+                                    <img src="${song.image || '/static/images/default-album.png'}" 
+                                         alt="${song.title}" 
+                                         class="me-2" 
+                                         style="width: 40px; height: 40px; object-fit: cover;">
+                                    <div>
+                                        <div class="text-light">${song.title}</div>
+                                        <small class="text-muted">${song.artist}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('<hr class="my-1 border-secondary">');
+                        searchResults.style.display = 'block';
+                    } else {
+                        searchResults.innerHTML = '<div class="p-2 text-muted">No songs found</div>';
+                        searchResults.style.display = 'block';
+                    }
+                });
+        }, 300);
+    });
+
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+
+    // Show results again when focusing on input
+    searchInput.addEventListener('focus', function() {
+        if (this.value.trim().length >= 2) {
+            searchResults.style.display = 'block';
+        }
+    });
+});
+</script>
+
+<style>
+.search-result-item:hover {
+    background-color: #282828;
+}
+
+#search-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#search-results::-webkit-scrollbar {
+    width: 8px;
+}
+
+#search-results::-webkit-scrollbar-track {
+    background: #121212;
+}
+
+#search-results::-webkit-scrollbar-thumb {
+    background: #282828;
+    border-radius: 4px;
+}
+
+#search-results::-webkit-scrollbar-thumb:hover {
+    background: #404040;
+}
+</style> 

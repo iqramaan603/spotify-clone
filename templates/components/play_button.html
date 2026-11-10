@@ -1,0 +1,11 @@
+{% load static %}
+
+<button class="btn btn-success btn-sm play-button" 
+        data-song-id="{{ song.id }}"
+        data-song-url="{{ song.audio_file.url }}"
+        data-song-title="{{ song.title }}"
+        data-song-artist="{{ song.artist.get_display_name }}"
+        data-song-image="{% if song.cover_image %}{{ song.cover_image.url }}{% elif song.album.cover_image %}{{ song.album.cover_image.url }}{% else %}{% static 'images/default-album.png' %}{% endif %}"
+        onclick="player.play({{ song.id }}, '{{ song.audio_file.url }}', this)">
+    <i class="fas fa-play"></i>
+</button> 

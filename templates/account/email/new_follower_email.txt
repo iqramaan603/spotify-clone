@@ -1,0 +1,17 @@
+New Follower!
+
+Hello {{ user.get_display_name }},
+
+Great news! You have a new follower on Spotify Clone.
+
+{{ follower.get_display_name }} is now following you.
+{% if follower.is_artist %}(Artist){% endif %}
+
+View their profile here: {% url 'accounts:view_profile' follower.username %}
+
+You can manage your notification preferences in your profile settings: {% url 'accounts:profile' %}
+
+This email was sent to {{ user.email }}.
+
+© {% now "Y" %} Spotify Clone. All rights reserved. 
+ 

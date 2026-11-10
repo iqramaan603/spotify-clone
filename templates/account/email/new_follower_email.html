@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1DB954;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .follower-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Follower!</h1>
+        </div>
+        
+        <p>Hello {{ user.get_display_name }},</p>
+        
+        <p>Great news! You have a new follower on Spotify Clone.</p>
+        
+        <div class="follower-info">
+            <h3>{{ follower.get_display_name }}</h3>
+            {% if follower.profile_picture %}
+                <img src="{{ follower.profile_picture.url }}" alt="Follower Profile Picture" style="width: 100px; height: 100px; border-radius: 50%;">
+            {% endif %}
+            {% if follower.is_artist %}
+                <p><strong>Artist</strong></p>
+            {% endif %}
+        </div>
+        
+        <p style="text-align: center;">
+            <a href="{% url 'accounts:view_profile' follower.username %}" class="btn">View Profile</a>
+        </p>
+        
+        <div class="footer">
+            <p>This email was sent to {{ user.email }}.</p>
+            <p>You can manage your notification preferences in your <a href="{% url 'accounts:profile' %}">profile settings</a>.</p>
+            <p>&copy; {% now "Y" %} Spotify Clone. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html> 

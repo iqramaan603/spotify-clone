@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Spotify Clone{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Featured Section -->
+    <section class="mb-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="bg-dark rounded p-4 text-center">
+                    <h1 class="display-4">Welcome to Spotify Clone</h1>
+                    <p class="lead">Discover millions of songs, playlists, and podcasts</p>
+                    {% if not user.is_authenticated %}
+                        <div class="mt-4">
+                            <a href="{% url 'accounts:register' %}" class="btn btn-success btn-lg me-3">Sign Up</a>
+                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">Log In</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Songs -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Featured Songs</h2>
+            <a href="{% url 'music:song_list' %}" class="btn btn-outline-light">View All</a>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for song in featured_songs %}
+                <div class="col">
+                    <div class="card bg-dark h-100 clickable-card" 
+                         onclick="handleCardClick(event, '{% url 'music:song_detail' song.id %}')">
+                        {% if song.cover_image %}
+                            <img src="{{ song.cover_image.url }}" class="card-img-top" alt="{{ song.title }}">
+                        {% elif song.album and song.album.cover_image %}
+                            <img src="{{ song.album.cover_image.url }}" class="card-img-top" alt="{{ song.title }}">
+                        {% else %}
+                            <div class="bg-secondary" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-music fa-3x text-light"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ song.title }}</h5>
+                            <p class="card-text text-muted">{{ song.artist.get_display_name }}</p>
+                            <div onclick="event.stopPropagation()">
+                                {% include 'components/play_button.html' with song=song %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Featured Albums -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Featured Albums</h2>
+            <a href="{% url 'music:album_list' %}" class="btn btn-outline-light">View All</a>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for album in featured_albums %}
+                <div class="col">
+                    <div class="card bg-dark h-100 clickable-card"
+                         onclick="handleCardClick(event, '{% url 'music:album_detail' album.id %}')">
+                        {% if album.cover_image %}
+                            <img src="{{ album.cover_image.url }}" class="card-img-top" alt="{{ album.title }}">
+                        {% else %}
+                            <div class="bg-secondary" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-compact-disc fa-3x text-light"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ album.title }}</h5>
+                            <p class="card-text text-muted">{{ album.artist.get_display_name }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">{{ album.songs.count }} songs</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Featured Playlists -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Featured Playlists</h2>
+            <a href="{% url 'playlists:playlist_list' %}" class="btn btn-outline-light">View All</a>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for playlist in featured_playlists %}
+                <div class="col">
+                    <div class="card bg-dark h-100 clickable-card"
+                         onclick="handleCardClick(event, '{% url 'playlists:playlist_detail' playlist.id %}')">
+                        {% if playlist.cover_image %}
+                            <img src="{{ playlist.cover_image.url }}" class="card-img-top" alt="{{ playlist.title }}">
+                        {% else %}
+                            <div class="bg-secondary" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-list fa-3x text-light"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ playlist.title }}</h5>
+                            <p class="card-text text-muted">By {{ playlist.user.get_display_name }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">{{ playlist.songs.count }} songs</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+{% block extra_js %}
+<style>
+    .clickable-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .clickable-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .clickable-card .btn {
+        position: relative;
+        z-index: 2;
+    }
+</style>
+
+<script>
+function handleCardClick(event, url) {
+    // If the click was on a button or its child elements, don't navigate
+    if (event.target.closest('.btn')) {
+        return;
+    }
+    window.location.href = url;
+}
+</script>
+{% endblock %}
+{% endblock %} 

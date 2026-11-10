@@ -1,0 +1,243 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% csrf_token %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Spotify Clone{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            min-height: 100vh;
+            padding-bottom: 100px; /* Space for player */
+        }
+        
+        .card {
+            background-color: #181818;
+            transition: background-color 0.3s;
+            color: #ffffff;
+        }
+        
+        .card:hover {
+            background-color: #282828;
+        }
+
+        /* Text colors */
+        .text-muted {
+            color: #b3b3b3 !important;
+        }
+
+        .text-light {
+            color: #ffffff !important;
+        }
+
+        /* Form controls */
+        .form-control {
+            background-color: #282828;
+            border-color: #404040;
+            color: #ffffff;
+        }
+
+        .form-control:focus {
+            background-color: #404040;
+            border-color: #1DB954;
+            color: #ffffff;
+            box-shadow: none;
+        }
+
+        .form-control::placeholder {
+            color: #b3b3b3;
+        }
+
+        /* Select boxes */
+        select.form-select {
+            background-color: #282828;
+            border-color: #404040;
+            color: #ffffff;
+        }
+
+        select.form-select:focus {
+            background-color: #404040;
+            border-color: #1DB954;
+            box-shadow: none;
+        }
+
+        /* Table styles */
+        .table {
+            color: #ffffff;
+        }
+
+        .table-dark {
+            background-color: #181818;
+            color: #ffffff;
+        }
+
+        .table-dark td, .table-dark th {
+            border-color: #404040;
+        }
+
+        /* List group items */
+        .list-group-item {
+            background-color: #181818;
+            color: #ffffff;
+            border-color: #404040;
+        }
+
+        .list-group-item:hover {
+            background-color: #282828;
+        }
+
+        /* Links */
+        a {
+            color: #1DB954;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #1ed760;
+            text-decoration: none;
+        }
+
+        /* Dropdown menus */
+        .dropdown-menu {
+            background-color: #282828;
+            border-color: #404040;
+        }
+
+        .dropdown-item {
+            color: #ffffff;
+        }
+
+        .dropdown-item:hover {
+            background-color: #404040;
+            color: #ffffff;
+        }
+        
+        .btn-success {
+            background-color: #1DB954;
+            border-color: #1DB954;
+        }
+        
+        .btn-success:hover {
+            background-color: #1ed760;
+            border-color: #1ed760;
+        }
+        
+        .btn-outline-success {
+            color: #1DB954;
+            border-color: #1DB954;
+        }
+        
+        .btn-outline-success:hover {
+            background-color: #1DB954;
+            border-color: #1DB954;
+        }
+
+        /* Modal styles */
+        .modal-content {
+            background-color: #282828;
+            color: #ffffff;
+        }
+
+        .modal-header {
+            border-bottom-color: #404040;
+        }
+
+        .modal-footer {
+            border-top-color: #404040;
+        }
+
+        /* Alert styles */
+        .alert {
+            color: #ffffff;
+        }
+
+        .alert-success {
+            background-color: rgba(29, 185, 84, 0.1);
+            border-color: #1DB954;
+        }
+
+        .alert-danger {
+            background-color: rgba(255, 0, 0, 0.1);
+            border-color: #ff0000;
+        }
+
+        /* Badge styles */
+        .badge {
+            color: #ffffff;
+        }
+
+        /* Pre and Code blocks */
+        pre {
+            background-color: #282828;
+            color: #ffffff;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    {% include 'components/navbar.html' %}
+    
+    <main class="py-4">
+        {% if messages %}
+            <div class="container mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% if user.is_authenticated %}
+        {% include 'components/player.html' %}
+    {% endif %}
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Player -->
+    <script src="{% static 'js/player.v2.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        // Add CSRF token to all AJAX requests
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const headers = new Headers({
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                });
+                window.fetchOptions = {
+                    headers: headers,
+                    credentials: 'same-origin'
+                };
+            });
+        }
+    </script>
+</body>
+</html> 

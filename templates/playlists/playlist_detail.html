@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ playlist.title }} - Spotify Clone{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Playlist Info -->
+        <div class="col-md-4">
+            <div class="card bg-dark border-light mb-4">
+                <div class="card-body text-center">
+                    {% if playlist.cover_image %}
+                        <img src="{{ playlist.cover_image.url }}" alt="{{ playlist.title }}" 
+                             class="img-fluid rounded mb-3" style="max-width: 200px;">
+                    {% else %}
+                        <div class="bg-secondary rounded mb-3 mx-auto" style="width: 200px; height: 200px;">
+                            <i class="fas fa-music fa-5x text-light" style="line-height: 200px;"></i>
+                        </div>
+                    {% endif %}
+                    <h3>{{ playlist.title }}</h3>
+                    <p class="text-muted">Created by {{ playlist.user.get_display_name }}</p>
+                    <p>{{ playlist.description }}</p>
+                    <div class="d-flex justify-content-around mb-3">
+                        <div>
+                            <h5>{{ playlist.song_count }}</h5>
+                            <small class="text-muted">Songs</small>
+                        </div>
+                        <div>
+                            <h5>{{ playlist.followers.count }}</h5>
+                            <small class="text-muted">Followers</small>
+                        </div>
+                    </div>
+                    {% if user == playlist.user %}
+                        <div class="btn-group">
+                            <a href="{% url 'playlists:edit_playlist' playlist.pk %}" class="btn btn-outline-light">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                            <a href="{% url 'playlists:delete_playlist' playlist.pk %}" class="btn btn-outline-danger">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </a>
+                        </div>
+                    {% else %}
+                        <form method="post" action="{% url 'playlists:follow_playlist' playlist.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if is_following %}btn-danger{% else %}btn-success{% endif %}">
+                                {% if is_following %}
+                                    <i class="fas fa-heart-broken me-1"></i> Unfollow
+                                {% else %}
+                                    <i class="fas fa-heart me-1"></i> Follow
+                                {% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Songs List -->
+        <div class="col-md-8">
+            <div class="card bg-dark border-light">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Songs</h4>
+                    {% if user == playlist.user %}
+                        <a href="{% url 'playlists:add_song' playlist.pk %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add Songs
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if songs %}
+                        <div class="list-group list-group-flush bg-dark" id="playlist-songs">
+                            {% for playlist_song in songs %}
+                                <div class="list-group-item bg-dark border-light" data-song-id="{{ playlist_song.song.id }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            {% if user == playlist.user %}
+                                                <span class="me-3 handle" style="cursor: move;">
+                                                    <i class="fas fa-grip-vertical text-muted"></i>
+                                                </span>
+                                            {% endif %}
+                                            <div>
+                                                <h5 class="mb-1">{{ playlist_song.song.title }}</h5>
+                                                <small class="text-muted">{{ playlist_song.song.artist.get_display_name }}</small>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            {% include 'components/play_button.html' with song=playlist_song.song %}
+                                            {% if user == playlist.user %}
+                                                <form method="post" action="{% url 'playlists:remove_song' playlist.pk playlist_song.song.id %}" 
+                                                      class="d-inline" onsubmit="return confirm('Are you sure you want to remove this song?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted my-5">No songs in this playlist yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user == playlist.user %}
+    {% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var el = document.getElementById('playlist-songs');
+            var sortable = new Sortable(el, {
+                handle: '.handle',
+                animation: 150,
+                onEnd: function(evt) {
+                    var songIds = Array.from(el.children).map(item => item.dataset.songId);
+                    fetch('{% url "playlists:reorder_playlist" playlist.pk %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: 'positions[]=' + songIds.join('&positions[]=')
+                    });
+                }
+            });
+        });
+    </script>
+    {% endblock %}
+{% endif %}
+{% endblock %} 
