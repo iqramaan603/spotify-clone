@@ -23,8 +23,21 @@ A music streaming web app inspired by Spotify, built with Django. Users can sign
 
 ## Screenshots
 
-<!-- Add screenshots here later, for example: -->
-<!-- ![Home page](screenshots/home.png) -->
+### Welcome page
+![Welcome page](screenshots/welcome.png)
+
+### Songs
+![Songs list](screenshots/songs.png)
+
+### Albums
+![Albums](screenshots/album.png)
+
+### Playlists
+![Playlist](screenshots/playlist.png)
+![Playlist with songs](screenshots/playlist2.png)
+
+### Dashboard
+![Dashboard](screenshots/dashboard.png)
 
 ## How to run it on your computer
 
