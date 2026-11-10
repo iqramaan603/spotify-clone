@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card bg-dark border-light mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Music</h5>
+                    <div class="list-group list-group-flush bg-dark">
+                        <a href="{% url 'music:song_list' %}" class="list-group-item bg-dark border-light {% if request.resolver_match.url_name == 'song_list' %}active{% endif %}">
+                            <i class="fas fa-music me-2"></i> Songs
+                        </a>
+                        <a href="{% url 'music:album_list' %}" class="list-group-item bg-dark border-light {% if request.resolver_match.url_name == 'album_list' %}active{% endif %}">
+                            <i class="fas fa-compact-disc me-2"></i> Albums
+                        </a>
+                        {% if user.is_artist %}
+                            <a href="{% url 'music:upload_song' %}" class="list-group-item bg-dark border-light {% if request.resolver_match.url_name == 'upload_song' %}active{% endif %}">
+                                <i class="fas fa-upload me-2"></i> Upload Song
+                            </a>
+                            <a href="{% url 'music:create_album' %}" class="list-group-item bg-dark border-light {% if request.resolver_match.url_name == 'create_album' %}active{% endif %}">
+                                <i class="fas fa-plus me-2"></i> Create Album
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Genres Filter -->
+            {% if genres %}
+            <div class="card bg-dark border-light">
+                <div class="card-body">
+                    <h5 class="card-title">Genres</h5>
+                    <div class="list-group list-group-flush bg-dark">
+                        <a href="{% url 'music:song_list' %}" class="list-group-item bg-dark border-light {% if not selected_genre %}active{% endif %}">
+                            All Genres
+                        </a>
+                        {% for genre in genres %}
+                            <a href="{% url 'music:song_list' %}?genre={{ genre.id }}" class="list-group-item bg-dark border-light {% if selected_genre == genre.id|stringformat:'s' %}active{% endif %}">
+                                {{ genre.name }}
+                                <span class="badge bg-success float-end">{{ genre.songs.count }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            {% block music_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Function to handle song likes
+    function toggleLike(songId) {
+        fetch(`/music/songs/${songId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            const likeBtn = document.querySelector(`#like-btn-${songId}`);
+            const likesCount = document.querySelector(`#likes-count-${songId}`);
+            
+            if (data.is_liked) {
+                likeBtn.classList.remove('btn-outline-danger');
+                likeBtn.classList.add('btn-danger');
+            } else {
+                likeBtn.classList.remove('btn-danger');
+                likeBtn.classList.add('btn-outline-danger');
+            }
+            
+            likesCount.textContent = data.likes_count;
+        });
+    }
+
+    // Function to record song plays
+    function recordPlay(songId) {
+        fetch(`/music/songs/${songId}/play/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            const playsCount = document.querySelector(`#plays-count-${songId}`);
+            if (playsCount) {
+                playsCount.textContent = data.plays_count;
+            }
+        });
+    }
+</script>
+{% endblock %} 

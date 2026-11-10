@@ -59,6 +59,5 @@ staticfiles/
 
 # Songs and uploaded media (stay on my computer only)
 media/
-music/
 *.mp3
 *.zip

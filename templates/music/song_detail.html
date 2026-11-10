@@ -1,0 +1,154 @@
+{% extends 'music/base_music.html' %}
+
+{% block title %}{{ song.title }} - Spotify Clone{% endblock %}
+
+{% block music_content %}
+<div class="card bg-dark border-light">
+    <div class="card-body">
+        <div class="row">
+            <!-- Song Cover Image -->
+            <div class="col-md-4 mb-4">
+                {% if song.cover_image %}
+                    <img src="{{ song.cover_image.url }}" alt="{{ song.title }}" 
+                         class="img-fluid rounded" style="width: 100%; max-width: 300px;">
+                {% elif song.album and song.album.cover_image %}
+                    <img src="{{ song.album.cover_image.url }}" alt="{{ song.title }}" 
+                         class="img-fluid rounded" style="width: 100%; max-width: 300px;">
+                {% else %}
+                    <div class="bg-secondary rounded d-flex align-items-center justify-content-center" 
+                         style="width: 100%; max-width: 300px; aspect-ratio: 1;">
+                        <i class="fas fa-music fa-4x text-light"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Song Info -->
+            <div class="col-md-8">
+                <h2 class="mb-3">
+                    {{ song.title }}
+                    {% if song.is_explicit %}
+                        <span class="badge bg-danger">Explicit</span>
+                    {% endif %}
+                </h2>
+                <p class="text-muted">
+                    By <a href="{% url 'accounts:view_profile' song.artist.username %}" class="text-success">{{ song.artist.get_display_name }}</a>
+                    {% if song.album %}
+                        from album <a href="{% url 'music:album_detail' song.album.id %}" class="text-success">{{ song.album.title }}</a>
+                    {% endif %}
+                </p>
+                <p>
+                    <span class="badge bg-secondary me-2">{{ song.genre.name|default:"No Genre" }}</span>
+                    <span class="badge bg-secondary me-2">{{ song.duration }}</span>
+                    <span class="badge bg-secondary me-2" id="plays-count-{{ song.id }}">{{ song.total_plays }} plays</span>
+                    <span class="badge bg-secondary" id="likes-count-{{ song.id }}">{{ song.likes.count }} likes</span>
+                </p>
+
+                <!-- Actions -->
+                <div class="mb-4">
+                    {% include 'components/play_button.html' with song=song %}
+                    {% if user.is_authenticated %}
+                        <button onclick="toggleLike({{ song.id }})" id="like-btn-{{ song.id }}" 
+                                class="btn {% if is_liked %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                            <i class="fas fa-heart me-2"></i> Like
+                        </button>
+                        <button onclick="addToPlaylist({{ song.id }})" class="btn btn-outline-light">
+                            <i class="fas fa-plus me-2"></i> Add to Playlist
+                        </button>
+                    {% endif %}
+                    {% if user == song.artist %}
+                        <a href="{% url 'music:edit_song' song.id %}" class="btn btn-outline-light">
+                            <i class="fas fa-edit me-2"></i> Edit
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Lyrics -->
+                {% if song.lyrics %}
+                    <div class="card bg-dark border-light">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Lyrics</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre class="text-light" style="white-space: pre-wrap;">{{ song.lyrics }}</pre>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Album/Artist Info -->
+            <div class="col-md-4">
+                <!-- Artist Info -->
+                <div class="card bg-dark border-light mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">About the Artist</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        {% if song.artist.profile_picture %}
+                            <img src="{{ song.artist.profile_picture.url }}" alt="{{ song.artist.get_display_name }}" 
+                                 class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% endif %}
+                        <h5>{{ song.artist.get_display_name }}</h5>
+                        <p class="text-muted">{{ song.artist.followers.count }} followers</p>
+                        {% if song.artist.bio %}
+                            <p>{{ song.artist.bio|truncatewords:30 }}</p>
+                        {% endif %}
+                        <a href="{% url 'accounts:view_profile' song.artist.username %}" class="btn btn-outline-success">View Profile</a>
+                    </div>
+                </div>
+
+                <!-- More from Artist -->
+                <div class="card bg-dark border-light">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">More from {{ song.artist.get_display_name }}</h5>
+                    </div>
+                    <div class="list-group list-group-flush bg-dark">
+                        {% for other_song in song.artist.song_set.all|slice:":5" %}
+                            {% if other_song != song %}
+                                <a href="{% url 'music:song_detail' other_song.id %}" class="list-group-item bg-dark border-light">
+                                    {{ other_song.title }}
+                                    {% if other_song.is_explicit %}
+                                        <span class="badge bg-danger">Explicit</span>
+                                    {% endif %}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleLike(songId) {
+        fetch(`/music/songs/${songId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            const likeBtn = document.querySelector(`#like-btn-${songId}`);
+            const likesCount = document.querySelector(`#likes-count-${songId}`);
+            
+            if (data.is_liked) {
+                likeBtn.classList.remove('btn-outline-danger');
+                likeBtn.classList.add('btn-danger');
+            } else {
+                likeBtn.classList.remove('btn-danger');
+                likeBtn.classList.add('btn-outline-danger');
+            }
+            
+            likesCount.textContent = data.likes_count;
+        });
+    }
+
+    function addToPlaylist(songId) {
+        // Redirect to choose playlist page
+        window.location.href = `/playlists/add-song/?song=${songId}`;
+    }
+</script>
+{% endblock %} 

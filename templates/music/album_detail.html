@@ -1,0 +1,182 @@
+{% extends 'music/base_music.html' %}
+
+{% block title %}{{ album.title }} - Spotify Clone{% endblock %}
+
+{% block music_content %}
+<div class="card bg-dark border-light">
+    <div class="card-body">
+        <div class="row">
+            <!-- Album Info -->
+            <div class="col-md-4">
+                {% if album.cover_image %}
+                    <img src="{{ album.cover_image.url }}" alt="{{ album.title }}" class="img-fluid rounded mb-4">
+                {% else %}
+                    <div class="bg-secondary rounded" style="height: 300px;"></div>
+                {% endif %}
+                
+                <h2 class="mb-3">{{ album.title }}</h2>
+                <p class="text-muted">
+                    By <a href="{% url 'accounts:view_profile' album.artist.username %}" class="text-success">{{ album.artist.get_display_name }}</a>
+                </p>
+                <p>
+                    {% if album.genre %}
+                        <span class="badge bg-success me-2">{{ album.genre.name }}</span>
+                    {% endif %}
+                    <span class="badge bg-secondary me-2">{{ album.release_date|date:"M j, Y" }}</span>
+                    <span class="badge bg-secondary">{{ album.total_plays }} plays</span>
+                </p>
+                
+                {% if album.description %}
+                    <div class="mb-4">
+                        <h5>About the Album</h5>
+                        <p>{{ album.description }}</p>
+                    </div>
+                {% endif %}
+                
+                {% if user == album.artist %}
+                    <div class="mb-4">
+                        <a href="{% url 'music:edit_album' album.id %}" class="btn btn-outline-light">
+                            <i class="fas fa-edit me-2"></i> Edit Album
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Songs List -->
+            <div class="col-md-8">
+                <div class="card bg-dark border-light">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Songs</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if songs %}
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40px;">#</th>
+                                            <th>Title</th>
+                                            <th>Genre</th>
+                                            <th>Duration</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for song in songs %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>
+                                                <a href="{% url 'music:song_detail' song.id %}" class="text-decoration-none text-light">
+                                                    {{ song.title }}
+                                                    {% if song.is_explicit %}
+                                                        <span class="badge bg-danger ms-1">Explicit</span>
+                                                    {% endif %}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if song.genre %}
+                                                    <span class="badge bg-success">{{ song.genre.name }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ song.duration }}</td>
+                                            <td class="text-end">
+                                                {% include 'components/play_button.html' with song=song %}
+                                                {% if user.is_authenticated %}
+                                                    <button onclick="toggleLike({{ song.id }})" id="like-btn-{{ song.id }}" 
+                                                            class="btn {% if song in user.liked_songs.all %}btn-danger{% else %}btn-outline-danger{% endif %} btn-sm">
+                                                        <i class="fas fa-heart"></i>
+                                                        <span id="likes-count-{{ song.id }}">{{ song.likes.count }}</span>
+                                                    </button>
+                                                    <button onclick="addToPlaylist({{ song.id }})" class="btn btn-outline-light btn-sm" 
+                                                            title="Add to Playlist">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-center text-muted my-5">No songs in this album yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- More from Artist -->
+                <div class="card bg-dark border-light mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">More Albums by {{ album.artist.get_display_name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            {% for other_album in other_albums %}
+                                <div class="col">
+                                    <div class="card h-100 bg-dark border-light">
+                                        {% if other_album.cover_image %}
+                                            <img src="{{ other_album.cover_image.url }}" class="card-img-top" alt="{{ other_album.title }}" style="height: 150px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-secondary" style="height: 150px;"></div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ other_album.title }}</h6>
+                                            {% if other_album.genre %}
+                                                <p class="card-text">
+                                                    <span class="badge bg-success">{{ other_album.genre.name }}</span>
+                                                </p>
+                                            {% endif %}
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    {{ other_album.release_date|date:"M j, Y" }}
+                                                    • {{ other_album.songs.count }} songs
+                                                </small>
+                                            </p>
+                                            <a href="{% url 'music:album_detail' other_album.id %}" class="btn btn-outline-success btn-sm">View Album</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleLike(songId) {
+        fetch(`/music/songs/${songId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            const likeBtn = document.querySelector(`#like-btn-${songId}`);
+            const likesCount = document.querySelector(`#likes-count-${songId}`);
+            
+            if (data.is_liked) {
+                likeBtn.classList.remove('btn-outline-danger');
+                likeBtn.classList.add('btn-danger');
+            } else {
+                likeBtn.classList.remove('btn-danger');
+                likeBtn.classList.add('btn-outline-danger');
+            }
+            
+            likesCount.textContent = data.likes_count;
+        });
+    }
+
+    function addToPlaylist(songId) {
+        // Redirect to choose playlist page
+        window.location.href = `/playlists/add-song/?song=${songId}`;
+    }
+</script>
+{% endblock %} 

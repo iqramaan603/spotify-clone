@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Songs - Spotify Clone{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Songs</h1>
+        {% if user.is_artist %}
+            <a href="{% url 'music:upload_song' %}" class="btn btn-success">
+                <i class="fas fa-upload me-2"></i>Upload Song
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form method="get" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Search songs..." 
+                       value="{{ request.GET.q }}">
+                <button type="submit" class="btn btn-success">Search</button>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <form method="get" id="genre-form">
+                {% if request.GET.q %}
+                    <input type="hidden" name="q" value="{{ request.GET.q }}">
+                {% endif %}
+                <select name="genre" class="form-select" onchange="document.getElementById('genre-form').submit()">
+                    <option value="">All Genres</option>
+                    {% for genre in genres %}
+                        <option value="{{ genre.id }}" {% if selected_genre == genre.id %}selected{% endif %}>
+                            {{ genre.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- Songs List -->
+    <div class="card bg-dark">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px">#</th>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Album</th>
+                            <th>Genre</th>
+                            <th>Duration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for song in songs %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if song.cover_image %}
+                                            <img src="{{ song.cover_image.url }}" alt="{{ song.title }}" 
+                                                 class="me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                        {% elif song.album and song.album.cover_image %}
+                                            <img src="{{ song.album.cover_image.url }}" alt="{{ song.title }}" 
+                                                 class="me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="me-3 bg-secondary d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-music text-light"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-1">{{ song.title }}</h6>
+                                            <small class="text-muted">{{ song.artist.get_display_name }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'accounts:view_profile' song.artist.username %}" 
+                                       class="text-decoration-none text-light">
+                                        {{ song.artist.get_display_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if song.album %}
+                                        <a href="{% url 'music:album_detail' song.album.id %}" 
+                                           class="text-decoration-none text-light">
+                                            {{ song.album.title }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Single</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if song.genre %}
+                                        <span class="badge bg-secondary">{{ song.genre.name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ song.duration|time:"i:s" }}</td>
+                                <td>
+                                    {% include 'components/play_button.html' with song=song %}
+                                    {% if user.is_authenticated %}
+                                        <button class="btn btn-outline-light btn-sm" 
+                                                onclick="addToPlaylist({{ song.id }})"
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-placement="top" 
+                                                title="Add to Playlist">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm like-button" 
+                                                onclick="toggleLike({{ song.id }}, this)"
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-placement="top" 
+                                                title="Like">
+                                            <i class="{% if song in user.liked_songs.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <p class="mb-0">No songs found.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if songs.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if songs.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ songs.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.genre %}&genre={{ request.GET.genre }}{% endif %}">
+                            Previous
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in songs.paginator.page_range %}
+                    {% if songs.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.genre %}&genre={{ request.GET.genre }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if songs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ songs.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.genre %}&genre={{ request.GET.genre }}{% endif %}">
+                            Next
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+function toggleLike(songId, button) {
+    fetch(`/music/songs/${songId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const icon = button.querySelector('i');
+        if (data.is_liked) {
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+        } else {
+            icon.classList.remove('fas');
+            icon.classList.add('far');
+        }
+    });
+}
+
+function addToPlaylist(songId) {
+    // Redirect to choose playlist page
+    window.location.href = `/playlists/add-song/?song=${songId}`;
+}
+</script>
+{% endblock %}
+{% endblock %} 

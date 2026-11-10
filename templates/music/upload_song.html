@@ -1,0 +1,52 @@
+{% extends 'music/base_music.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Upload Song - Spotify Clone{% endblock %}
+
+{% block music_content %}
+<div class="card bg-dark border-light">
+    <div class="card-header">
+        <h4 class="card-title mb-0">Upload Song</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    {{ form.title|as_crispy_field }}
+                    {{ form.audio_file|as_crispy_field }}
+                    {{ form.genre|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.album|as_crispy_field }}
+                    {{ form.is_explicit|as_crispy_field }}
+                    {{ form.lyrics|as_crispy_field }}
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-upload me-2"></i> Upload Song
+                </button>
+                <a href="{% url 'music:song_list' %}" class="btn btn-outline-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Help Text -->
+<div class="card bg-dark border-light mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Upload Guidelines</h5>
+    </div>
+    <div class="card-body">
+        <ul class="mb-0">
+            <li>Supported audio formats: MP3, WAV, AAC</li>
+            <li>Maximum file size: 20MB</li>
+            <li>Please ensure you have the rights to upload and distribute the song</li>
+            <li>Mark explicit content appropriately</li>
+            <li>Adding lyrics is optional but recommended</li>
+            <li>You can add the song to an existing album or upload it as a single</li>
+        </ul>
+    </div>
+</div>
+{% endblock %} 

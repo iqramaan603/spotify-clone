@@ -1,0 +1,51 @@
+{% extends 'music/base_music.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Album - Spotify Clone{% endblock %}
+
+{% block music_content %}
+<div class="card bg-dark border-light">
+    <div class="card-header">
+        <h4 class="card-title mb-0">Create New Album</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    {{ form.title|as_crispy_field }}
+                    {{ form.cover_image|as_crispy_field }}
+                    {{ form.genre|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.release_date|as_crispy_field }}
+                    {{ form.description|as_crispy_field }}
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i> Create Album
+                </button>
+                <a href="{% url 'music:album_list' %}" class="btn btn-outline-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Help Text -->
+<div class="card bg-dark border-light mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Album Guidelines</h5>
+    </div>
+    <div class="card-body">
+        <ul class="mb-0">
+            <li>Choose a clear and descriptive title for your album</li>
+            <li>Upload a high-quality cover image (recommended size: 1000x1000px)</li>
+            <li>Supported image formats: JPG, PNG</li>
+            <li>Select the most appropriate genre for your album</li>
+            <li>Add a meaningful description to help listeners discover your music</li>
+            <li>You can add songs to the album after creating it</li>
+        </ul>
+    </div>
+</div>
+{% endblock %} 

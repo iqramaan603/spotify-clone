@@ -1,0 +1,109 @@
+{% extends 'music/base_music.html' %}
+
+{% block title %}Albums - Spotify Clone{% endblock %}
+
+{% block music_content %}
+<div class="card bg-dark border-light">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">Albums</h4>
+        <div class="d-flex">
+            <form class="d-flex me-3" method="get" id="genre-form">
+                {% if query %}
+                    <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                <select name="genre" class="form-select bg-dark text-light me-2" onchange="document.getElementById('genre-form').submit()">
+                    <option value="">All Genres</option>
+                    {% for genre in genres %}
+                        <option value="{{ genre.id }}" {% if selected_genre == genre.id %}selected{% endif %}>
+                            {{ genre.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+            <form class="d-flex" method="get">
+                {% if selected_genre %}
+                    <input type="hidden" name="genre" value="{{ selected_genre }}">
+                {% endif %}
+                <input type="search" name="q" class="form-control bg-dark text-light me-2" placeholder="Search albums..." value="{{ query|default:'' }}">
+                <button type="submit" class="btn btn-outline-success">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if albums %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for album in albums %}
+                <div class="col">
+                    <div class="card h-100 bg-dark border-light">
+                        {% if album.cover_image %}
+                            <img src="{{ album.cover_image.url }}" class="card-img-top" alt="{{ album.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-secondary" style="height: 200px;"></div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ album.title }}</h5>
+                            <p class="card-text text-muted">
+                                By <a href="{% url 'accounts:view_profile' album.artist.username %}" class="text-success">{{ album.artist.get_display_name }}</a>
+                            </p>
+                            {% if album.genre %}
+                                <p class="card-text">
+                                    <span class="badge bg-success">{{ album.genre.name }}</span>
+                                </p>
+                            {% endif %}
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    {{ album.song_set.count }} songs
+                                    • {{ album.release_date|date:"M j, Y" }}
+                                    • {{ album.total_plays }} plays
+                                </small>
+                            </p>
+                            <a href="{% url 'music:album_detail' album.id %}" class="btn btn-outline-success btn-sm">View Album</a>
+                            {% if user == album.artist %}
+                                <a href="{% url 'music:edit_album' album.id %}" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if albums.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if albums.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link bg-dark text-light border-light" href="?page={{ albums.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in albums.paginator.page_range %}
+                        {% if albums.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link bg-success border-light">{{ num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link bg-dark text-light border-light" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if albums.has_next %}
+                        <li class="page-item">
+                            <a class="page-link bg-dark text-light border-light" href="?page={{ albums.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <p class="text-center text-muted my-5">No albums found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

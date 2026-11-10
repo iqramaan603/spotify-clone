@@ -1,0 +1,68 @@
+{% extends 'music/base_music.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit {{ song.title }} - Spotify Clone{% endblock %}
+
+{% block music_content %}
+<div class="card bg-dark border-light">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">Edit Song</h4>
+        <form method="post" action="{% url 'music:delete_song' song.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this song?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash me-2"></i> Delete Song
+            </button>
+        </form>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    {{ form.title|as_crispy_field }}
+                    <div class="mb-3">
+                        <label class="form-label">Current Audio File</label>
+                        <p class="form-text text-muted">{{ song.audio_file.name }}</p>
+                        {{ form.audio_file|as_crispy_field }}
+                    </div>
+                    {{ form.genre|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                    {{ form.album|as_crispy_field }}
+                    {{ form.is_explicit|as_crispy_field }}
+                    {{ form.lyrics|as_crispy_field }}
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i> Save Changes
+                </button>
+                <a href="{% url 'music:song_detail' song.id %}" class="btn btn-outline-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Song Statistics -->
+<div class="card bg-dark border-light mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Song Statistics</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h4>{{ song.total_plays }}</h4>
+                <p class="text-muted">Total Plays</p>
+            </div>
+            <div class="col-md-4">
+                <h4>{{ song.likedsong_set.count }}</h4>
+                <p class="text-muted">Total Likes</p>
+            </div>
+            <div class="col-md-4">
+                <h4>{{ song.created_at|date:"M j, Y" }}</h4>
+                <p class="text-muted">Upload Date</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
